@@ -260,7 +260,7 @@ function finish() {
     document.getElementById("quizScreen").style.display = "none";
     document.getElementById("resultScreen").style.display = "block";
     
-    let p = Math.round((score / quiz.length) * 100);
+    let p = isNaN(score/quiz.length) ? 0 : Math.round((score/quiz.length)*100);
     let timeSpent = totalTime - timeLeft;
     let min = Math.floor(timeSpent / 60);
     let sec = timeSpent % 60;
@@ -292,3 +292,4 @@ function finish() {
 </body>
 
 </html>
+
