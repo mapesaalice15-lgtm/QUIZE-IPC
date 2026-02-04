@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPC Quiz 1 | Sir Fransisco</title>
+
+<style>
+:root {
+  --primary:#00d2ff; --secondary:#3a7bd5;
+  --success:#00e676; --error:#ff5252; --warning:#ff9800;
+  --dark-bg: #0f2027;
+}
+*{box-sizing:border-box; transition:0.3s}
+body{
+  font-family:'Segoe UI',Roboto,Arial;
+  background:linear-gradient(135deg,#2c5364,#203a43,#0f2027);
+  min-height:100vh; margin:0; display:flex;
+  align-items:center; justify-content:center; color:white;
+}
+
+.card{
+  width:95%; max-width:500px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  border-radius:24px; overflow:hidden;
+  box-shadow:0 25px 50px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  margin: 20px 0;
+}
+
+.card-header {
+  background: linear-gradient(to right, var(--secondary), var(--primary));
+  padding: 20px; text-align: center; font-weight: bold;
+  letter-spacing: 1px; text-transform: uppercase; font-size: 14px;
+}
+
+.card-content { padding: 30px; text-align: center; }
+
+h2{color:var(--primary); margin-top:0;}
+
+.progress-container { width: 100%; background: rgba(255,255,255,0.1); height: 6px; }
+#progressBar { width: 0%; height: 100%; background: var(--success); transition: 0.5s; }
+
+input{
+  width:100%; padding:14px; border-radius:12px;
+  background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2);
+  color:white; margin-bottom:15px; outline:none;
+}
+button{
+  width:100%; padding:15px; border-radius:12px;
+  border:none; font-weight:bold; cursor:pointer; font-size:16px;
+}
+#startBtn{background:var(--primary); color:var(--dark-bg);}
+#submitBtn{background:var(--secondary); color:white;}
+#nextBtn{background:var(--success); color:white;}
+
+.option{
+  background:rgba(255,255,255,0.05); margin:10px 0; padding:15px; border-radius:10px;
+  cursor:pointer; border:1px solid rgba(255,255,255,0.1);
+  text-align:left; display: flex; align-items: center;
+}
+.option:hover{background:rgba(255,255,255,0.15);}
+.option.selected{background:var(--secondary); border-color:var(--primary);}
+.letter-box {
+    background: rgba(255,255,255,0.1); width: 30px; height: 30px; display: flex;
+    align-items: center; justify-content: center; border-radius: 6px; margin-right: 15px; font-weight: bold;
+}
+
+.dashboard-info {
+    text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin: 20px 0;
+}
+.dashboard-info div { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+.label { color: var(--primary); font-weight: bold; font-size: 11px; text-transform: uppercase; display: block;}
+
+/* Failed Questions Area */
+#failedArea {
+    text-align: left; background: rgba(255, 82, 82, 0.1);
+    padding: 15px; border-radius: 12px; max-height: 200px;
+    overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--error);
+}
+.fail-item { margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+.correct-ans { color: var(--success); font-weight: bold; }
+
+.timer{color:var(--warning); font-weight:bold; font-size:1.4rem; margin-bottom:10px;}
+.pass{color:var(--success)} 
+.fail{color:var(--error)}
+.credit{ margin-top:20px; font-size:13px; color:#00d2ff; opacity:0.8; }
+</style>
+</head>
+
+<body>
+
+<div class="card" id="startScreen">
+  <div class="card-header">QUIZ</div>
+  <div class="card-content">
+      <h2>Infection Prevention and Control</h2>
+      <p style="opacity: 0.7;">Fill details to unlock the quiz</p>
+      <input id="name" placeholder="Full Student Name">
+      <input id="reg" placeholder="Registration Number">
+      <button id="startBtn">SUBMIT AND START</button>
+      <div class="credit">Prepared by: <b>Sir Fransisco</b></div>
+  </div>
+</div>
+
+<div class="card" id="quizScreen" style="display:none;">
+  <div class="card-header">Quiz in Progress</div>
+  <div class="progress-container"><div id="progressBar"></div></div>
+  <div class="card-content">
+      <div class="timer"><span id="time">450</span>s</div>
+      <h3 id="question" style="min-height: 60px;"></h3>
+      <div id="options"></div>
+      <button id="submitBtn">Choose Answer</button>
+      <button id="nextBtn" style="display:none;">Next Question</button>
+      <div id="feedback" style="margin-top:15px; min-height:24px; font-weight:bold;"></div>
+      <div class="credit">IPC Unit</div>
+  </div>
+</div>
+
+<div class="card" id="resultScreen" style="display:none;">
+  <div class="card-header">RESULTS</div>
+  <div class="card-content">
+      <div class="dashboard-info">
+          <div><span class="label">Student Name</span> <span id="resName"></span></div>
+          <div><span class="label">Registration number</span> <span id="resReg"></span></div>
+          <div><span class="label">Total Score</span> <span id="resScore"></span></div>
+          <div><span class="label">Time Used</span> <span id="resTime"></span></div>
+          <div><span class="label">Percentage</span> <span id="resAccuracy"></span></div>
+      </div>
+
+      <div id="failContainer" style="display:none;">
+          <span class="label" style="color:var(--error); margin-bottom:5px;">Questions to Review:</span>
+          <div id="failedArea"></div>
+      </div>
+
+      <h1 id="scoreDisplay" style="font-size: 3rem; margin: 10px 0; color:var(--primary);"></h1>
+      <h2 id="message"></h2>
+      
+      <button onclick="location.reload()" style="background:var(--secondary); color:white;">Send Results to Parents</button>
+      <div class="credit">Instructor: <i>Sir Fransisco</i></div>
+  </div>
+</div>
+
+<script>
+const quiz=[
+ {q:"What is the primary goal of processing instruments?",
+ options:["Reducing equipment costs","Preventing nosocomial infections","Speeding procedures","Improving appearance","Replacing hand hygiene"],answer:1},
+ {q:"Which process removes soil using water and detergents?",
+ options:["Sterilization","High Level Disinfection","Cleaning","Disinfestation","Incineration"],answer:2},
+ {q:"Which alcohol concentration is most effective?",
+ options:["10%","50%","70%","95%","99%"],answer:2},
+ {q:"What is the standard temperature for autoclaving?",
+ options:["100°C","121°C","160°C","180°C","200°C"],answer:1},
+ {q:"Which method uses friction and fluidics?",
+ options:["Mechanical cleaning","Manual cleaning","Dry heat","Gas plasma","Chemical soaking"],answer:0},
+ {q:"Which agent preserves fresh tissue?",
+ options:["Glutaraldehyde","Chlorine","Formaldehyde","Hydrogen Peroxide","Peracetic acid"],answer:2},
+ {q:"How long in 180°C dry heat?",
+ options:["10 min","30 min","1 hr","2 hrs","12 hrs"],answer:3},
+ {q:"Ideal disinfectant characteristic?",
+ options:["High toxicity","Pleasant/no odor","High cost","Corrosive","Slow action"],answer:1},
+ {q:"Terminal disinfection refers to?",
+ options:["During illness","After recovery/death","Needle disposal","Hand washing","Blade sterilization"],answer:1},
+ {q:"Which gas is used for low-temp sterilization?",
+ options:["Oxygen","CO₂","Ethylene Oxide","Nitrogen","Chlorine"],answer:2}
+];
+
+let i=0, score=0, selected=null, timeLeft=450, totalTime=450, timer;
+let failedQuestions = []; // Array to track missed questions
+const letters = ['A', 'B', 'C', 'D', 'E'];
+
+document.getElementById("startBtn").onclick=()=>{
+ if(!document.getElementById("name").value.trim() || !document.getElementById("reg").value.trim()){
+   alert("Details required"); return;
+ }
+ document.getElementById("startScreen").style.display="none";
+ document.getElementById("quizScreen").style.display="block";
+ loadQuestion(); startTimer();
+};
+
+function startTimer(){
+ timer=setInterval(()=>{
+  timeLeft--; 
+  document.getElementById("time").textContent=timeLeft;
+  if(timeLeft<=0){clearInterval(timer); finish();}
+ },1000);
+}
+
+function loadQuestion(){
+ selected=null; 
+ document.getElementById("feedback").textContent="";
+ document.getElementById("submitBtn").style.display="block"; 
+ document.getElementById("nextBtn").style.display="none";
+ document.getElementById("progressBar").style.width = ((i) / quiz.length * 100) + "%";
+
+ const q=quiz[i];
+ document.getElementById("question").textContent=(i+1)+". "+q.q;
+ const container = document.getElementById("options");
+ container.innerHTML="";
+ 
+ q.options.forEach((o,idx)=>{
+  let d=document.createElement("div");
+  d.className="option"; 
+  d.innerHTML=`<div class="letter-box">${letters[idx]}</div> <span>${o}</span>`;
+  d.onclick=()=>{
+    document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+    d.classList.add("selected"); selected=idx;
+  }
+  container.appendChild(d);
+ });
+}
+
+document.getElementById("submitBtn").onclick=()=>{
+ if(selected===null){alert("Please select an answer");return;}
+ if(selected===quiz[i].answer){
+   score++; 
+   document.getElementById("feedback").innerHTML="<span class='pass'></span>";
+ } else {
+   // Track failed question
+   failedQuestions.push({
+       q: quiz[i].q,
+       correct: quiz[i].options[quiz[i].answer]
+   });
+   document.getElementById("feedback").innerHTML=""; 
+ }
+ document.getElementById("submitBtn").style.display="none"; 
+ document.getElementById("nextBtn").style.display="block";
+};
+
+document.getElementById("nextBtn").onclick=()=>{ i++; i<quiz.length?loadQuestion():finish(); };
+
+//Here is where the link for excel goes
+// This function handles the "sending" logic
+function sendDataToSheet(name, reg, score) {
+    const url = "https://script.google.com/macros/s/AKfycbyR7A_u8zRWCG4GzhntPb123kqThgIjvBbbTEWtZKNRLN28wA2RZhUDDA2-ULUVo0DI/exec"; // <--- PASTE YOUR LINK HERE
+    const data = { name: name, reg: reg, score: score };
+
+    fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        cache: "no-cache",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+}
+
+// This function runs when the quiz ends
+function finish() {
+    clearInterval(timer);
+    
+    // 1. Capture the data
+    const nameVal = document.getElementById("name").value;
+    const regVal = document.getElementById("reg").value;
+    const scoreFraction = score + "/" + quiz.length;
+    
+    // 2. Trigger the send to Google Sheets
+    sendDataToSheet(nameVal, regVal, scoreFraction);
+
+    // 3. Update the visual Dashboard for the student
+    document.getElementById("quizScreen").style.display = "none";
+    document.getElementById("resultScreen").style.display = "block";
+    
+    let p = Math.round((score / quiz.length) * 100);
+    let timeSpent = totalTime - timeLeft;
+    let min = Math.floor(timeSpent / 60);
+    let sec = timeSpent % 60;
+
+    document.getElementById("resName").textContent = nameVal;
+    document.getElementById("resReg").textContent = regVal;
+    document.getElementById("resScore").textContent = scoreFraction;
+    document.getElementById("resTime").textContent = `${min}m ${sec}s`;
+    document.getElementById("resAccuracy").textContent = p + "%";
+    document.getElementById("scoreDisplay").textContent = p + "%";
+    
+    // Show Failed Questions if any exist
+    if(failedQuestions.length > 0) {
+        document.getElementById("failContainer").style.display = "block";
+        document.getElementById("failedArea").innerHTML = failedQuestions.map((item, idx) => `
+           <div class="fail-item">
+               <strong>${idx+1}. ${item.q}</strong><br>
+               Correct: <span class="correct-ans">${item.correct}</span>
+           </div>
+        `).join('');
+    }
+
+    const msg = document.getElementById("message");
+    msg.textContent = p >= 50 ? "Excellent Mastery!" : "Ualale Bila Kusoma!";
+    msg.className = p >= 50 ? "pass" : "fail";
+}
+</script>
+
+</body>
+</html>
